@@ -1,75 +1,84 @@
-# FixLoop — AI Repair Engineer
+# FixLoop — Complete Prototype
 
-An early-stage coding-agent prototype for the NVIDIA x Nebius Global AI Hackathon. FixLoop uses an NVIDIA Nemotron model through the Nebius Token Factory runtime API to diagnose bugs, propose patches, suggest regression tests, and run tests against a proposed patch for a fixed built-in demo project.
+FixLoop turns a bug report into a likely cause, investigation steps, a proposed patch, and regression-test ideas.
 
-**Track:** Coding and Agentic Engineering  
-**License:** MIT  
-**Status:** Prototype, not production-safe autonomous software.
+## Implemented
+- Streamlit UI with Guided Demo, Analyze a Bug, and About & Setup tabs.
+- Offline heuristic mode that works without an API key or payment card.
+- Optional Nebius Token Factory integration using an OpenAI-compatible chat-completions endpoint.
+- Model ID and endpoint configurable through environment variables or Streamlit secrets.
+- JSON response parsing and clearer errors for common API failures.
+- Built-in before/after calculator example and regression-test runner.
+- Downloadable Markdown analysis report.
+- Custom pasted code is treated as text and never executed.
+- API keys are not stored in source code.
+- Basic automated syntax/feature checks and GitHub Actions workflow.
 
-## Hackathon requirement fit
+## Important limitations
+This is a complete prototype, not yet an autonomous repository-editing agent. It does not clone repositories, create branches, apply patches, commit changes, or run user-submitted code. Demo mode is heuristic, not a live LLM. Live model operation requires authorized Nebius access, available credits, and a model identifier enabled for your account. The default model identifier is only a starting value, not a guarantee of availability.
 
-- Makes a real runtime call to Nebius Token Factory's OpenAI-compatible chat-completions API.
-- Uses a configurable NVIDIA Nemotron model ID.
-- Demonstrates bug report → model diagnosis → patch → actual test run → visible pass/fail result.
-- Includes README, source code, demo fixture, requirements, and MIT license.
+## Requirements
+Python 3.10+ (Python 3.12 recommended). Internet is needed to install packages. Live mode also needs an authorized Nebius API key.
 
-Verify the model identifier and availability in your Token Factory account before using the demo. The default model ID is configurable and may need to be changed to a model currently available to you.
+## Run on Windows / VS Code
+Open this folder in VS Code. In Terminal → New Terminal, run each command:
 
-## Run locally
-
-Requires Python 3.10+.
-
-```bash
+```powershell
 python -m venv .venv
-# macOS/Linux
-source .venv/bin/activate
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-streamlit run app.py
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
 ```
 
-Open the local Streamlit URL, enter your Nebius Token Factory API key in the sidebar, verify the model ID, then click **Investigate with Nemotron**.
+If PowerShell blocks activation, run this in the same terminal and retry:
 
-Environment variables are also supported:
-
-```bash
-export NEBIUS_API_KEY="your_key"
-export NEBIUS_MODEL="nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
-streamlit run app.py
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
 ```
 
-## Configuration
+You can also skip activation and run `python -m pip install -r requirements.txt`, then `python -m streamlit run app.py`.
 
-- `NEBIUS_API_KEY`: Token Factory API key.
-- `NEBIUS_MODEL`: Model ID available to your account.
-- `NEBIUS_BASE_URL`: API endpoint; defaults to `https://api.tokenfactory.nebius.com/v1/chat/completions`.
+## Optional live Nebius configuration
+Set environment variables or configure them in Streamlit Community Cloud → App settings → Secrets:
 
-## Demo video outline
+```toml
+NEBIUS_API_KEY = "your-authorized-key"
+NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1"
+NEBIUS_MODEL = "exact-model-id-from-your-account"
+```
 
-1. Show the seeded discount bug and its test file.
-2. Run the Nemotron diagnosis through Token Factory.
-3. Show root cause, patch, and suggested regression tests.
-4. Run the demo tests and show the real output.
-5. Explain that the app, not the model, determines test pass/fail.
+Optional environment variables: `NEBIUS_TIMEOUT` (default 90 seconds) and `MAX_CODE_CHARS` (default 18000). Never commit a real key or `.streamlit/secrets.toml`. Confirm the model ID in the catalog available to your account; the default may not be enabled for you.
 
-## Safety and limitations
+## Deploy the offline demo
+1. Upload/push the project to a GitHub repository.
+2. Sign in at https://share.streamlit.io/.
+3. Create an app from the repository, branch `main`, main file path `app.py`.
+4. Deploy. Offline mode requires no secrets.
+5. Only add a live API key through the host Secrets UI if you have authorized access.
 
-- The runner executes only the fixed built-in demo test suite in a temporary directory.
-- Custom pasted code is analyzed as text and is not executed.
-- Never commit API keys or secrets.
-- Review generated patches before using them.
-- Before supporting arbitrary repositories, implement a hardened isolated container/VM with no host mounts or secrets, restricted networking, resource limits, and strict timeouts.
-- No GitHub cloning, commits, or pull requests are implemented yet.
+Official guide: https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app
 
-## Roadmap
+## Safety
+- Code is sent to the configured provider only when live mode is selected and Analyze is clicked. Avoid sensitive code or secrets in a public demo.
+- User-pasted code is never executed.
+- The built-in runner only accepts the hard-coded calculator sample and runs a fixed test harness in a temporary directory.
+- Model output is untrusted. Patches are displayed, not automatically applied.
+- A human should review and test patches before use.
 
-1. Add hardened ephemeral execution.
-2. Add authorized repository import and safe file selection.
-3. Add bounded iterative test → diagnose → patch cycles.
-4. Show unified diffs and per-test output.
-5. Add a small benchmark of seeded bugs.
-6. Deploy with server-side secrets and request/error logging.
+## Test and CI
+Run `python -m compileall -q app.py tests demo_project` and `pytest -q`. The example project's calculator tests are intentionally expected to fail against the buggy function; this is part of the demonstration, not a CI failure. CI checks the app's syntax and key features instead.
 
-## Hackathon feedback
+## Hackathon demo flow
+1. Show the incorrect discount behavior.
+2. Run the built-in tests against the buggy sample.
+3. Inspect the proposed diff.
+4. Validate the fixed built-in sample.
+5. Show the offline bug-report analysis.
+6. If authorized API access is available, demonstrate live model mode and identify the actual model used.
 
-Before submitting, record genuine test observations: patch quality, diagnosis accuracy, latency, token usage, API errors, integration friction, and possible improvements. Do not fabricate feedback.
+## Next milestones
+- Confirm card-free or sponsored live Nemotron access.
+- Add controlled repository import and patch review.
+- Add isolated container sandbox for tests on untrusted repositories.
+- Add run history, rate limits, audit logs, and evaluation examples.

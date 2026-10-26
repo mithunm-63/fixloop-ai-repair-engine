@@ -1,0 +1,8 @@
+[
+  "demo_project/test_calculator.py::CalculatorTests::test_full_discount",
+  "demo_project/test_calculator.py::CalculatorTests::test_invalid_discount",
+  "demo_project/test_calculator.py::CalculatorTests::test_no_discount",
+  "demo_project/test_calculator.py::CalculatorTests::test_ten_percent_discount",
+  "tests/test_demo_analysis.py::test_app_syntax",
+  "tests/test_demo_analysis.py::test_expected_features_are_present"
+]

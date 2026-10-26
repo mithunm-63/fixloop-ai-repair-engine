@@ -1,0 +1,4 @@
+{
+  "demo_project/test_calculator.py::CalculatorTests::test_full_discount": true,
+  "demo_project/test_calculator.py::CalculatorTests::test_ten_percent_discount": true
+}
